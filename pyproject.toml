@@ -1,0 +1,22 @@
+[project]
+name = "workout-logger"
+version = "0.1.0"
+description = "CLI tool for workout video exercise classification and rep counting using InternVL3-8B"
+requires-python = ">=3.10"
+dependencies = [
+    "opencv-python>=4.8",
+    "numpy>=1.24",
+    "Pillow>=10.0",
+    "torch>=2.1",
+    "transformers>=4.40",
+    "bitsandbytes>=0.43",
+    "accelerate>=0.27",
+    "torchvision>=0.16",
+]
+
+[project.scripts]
+video-reps = "video_reps.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

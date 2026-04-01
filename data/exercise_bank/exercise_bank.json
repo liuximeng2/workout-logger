@@ -1,0 +1,52 @@
+{
+  "exercises": [
+    {
+      "name": "push-up",
+      "aliases": ["push up", "pushup"],
+      "description": "A bodyweight pushing exercise performed in plank position, lowering and raising the torso using the arms.",
+      "rep_definition": "One full rep is lowering the chest toward the ground and pressing back up until the arms are fully extended."
+    },
+    {
+      "name": "squat",
+      "aliases": ["air squat", "bodyweight squat"],
+      "description": "A lower-body movement involving bending the knees and hips to lower the body, then returning to standing.",
+      "rep_definition": "One full rep is standing upright, lowering the hips to at least parallel with the knees, and returning to standing."
+    },
+    {
+      "name": "deadlift",
+      "aliases": ["conventional deadlift"],
+      "description": "A compound lift where a barbell or weight is lifted from the floor to hip height by extending the hips and knees.",
+      "rep_definition": "One full rep is lifting the weight from the floor to a fully upright standing position, then returning it to the floor."
+    },
+    {
+      "name": "bicep curl",
+      "aliases": ["curl", "dumbbell curl", "barbell curl"],
+      "description": "An isolation exercise where weight is curled upward by flexing the elbow, targeting the biceps.",
+      "rep_definition": "One full rep is arms extended at the sides, curling the weight up toward the shoulders, and lowering back to full extension."
+    },
+    {
+      "name": "lunge",
+      "aliases": ["forward lunge", "walking lunge"],
+      "description": "A lower-body exercise where one leg steps forward and bends while the rear knee lowers toward the ground.",
+      "rep_definition": "One full rep is stepping forward into a lunge position with the rear knee lowering, then returning to standing. Each leg counts as one rep."
+    },
+    {
+      "name": "pull-up",
+      "aliases": ["pullup", "chin-up"],
+      "description": "An upper-body exercise where the body is pulled upward on a bar until the chin clears the bar.",
+      "rep_definition": "One full rep is hanging with arms extended, pulling up until the chin is above the bar, and lowering back to full arm extension."
+    },
+    {
+      "name": "shoulder press",
+      "aliases": ["overhead press", "OHP", "military press"],
+      "description": "A pressing movement where weight is pushed overhead from shoulder height to full arm extension.",
+      "rep_definition": "One full rep is pressing the weight from shoulder level to full lockout overhead, then lowering back to shoulder level."
+    },
+    {
+      "name": "sit-up",
+      "aliases": ["situp", "crunch"],
+      "description": "A core exercise where the torso is raised from a lying position toward the knees and then lowered back.",
+      "rep_definition": "One full rep is lying flat on the back, raising the torso toward the knees, and lowering back to the starting position."
+    }
+  ]
+}
