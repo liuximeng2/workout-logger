@@ -1,14 +1,65 @@
 """Model loading and inference for quantized InternVL3-8B."""
 
 import logging
+import re
+from pathlib import Path
 
 import torch
 import torchvision.transforms as T
 from PIL import Image
 from torchvision.transforms.functional import InterpolationMode
-from transformers import AutoModel, AutoTokenizer, BitsAndBytesConfig, GenerationConfig
+from transformers import AutoModel, AutoTokenizer, BitsAndBytesConfig
 
 logger = logging.getLogger("video_reps")
+
+DEFAULT_HF_REPO = "OpenGVLab/InternVL3-8B"
+DEFAULT_LOCAL_MODEL_DIR = Path("models/InternVL3-8B")
+
+
+def _looks_like_hub_id(model_path: str) -> bool:
+    """True for 'org/name' Hub IDs; False for paths like 'models/InternVL3-8B'."""
+    if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", model_path):
+        return False
+    if model_path.startswith("models/") or model_path.startswith("./"):
+        return False
+    return True
+
+
+def ensure_local_model(model_path: str) -> str:
+    """Resolve to a local directory with model files; download into the project if needed.
+
+    Uses ``huggingface_hub.snapshot_download(..., local_dir=...)`` so weights land under
+    the requested directory (see ``video_reps.project_paths`` for HF cache under the repo).
+    """
+    from huggingface_hub import snapshot_download
+
+    path = Path(model_path)
+    resolved = path.resolve()
+
+    def has_config(p: Path) -> bool:
+        return p.is_dir() and (p / "config.json").is_file()
+
+    if has_config(resolved):
+        return str(resolved)
+
+    if _looks_like_hub_id(model_path):
+        hub_id = model_path
+        target_dir = DEFAULT_LOCAL_MODEL_DIR.resolve()
+    else:
+        hub_id = DEFAULT_HF_REPO
+        target_dir = resolved
+
+    if not has_config(target_dir):
+        logger.info("Downloading %s to %s", hub_id, target_dir)
+        target_dir.mkdir(parents=True, exist_ok=True)
+        snapshot_download(
+            hub_id,
+            local_dir=str(target_dir),
+            local_dir_use_symlinks=False,
+        )
+
+    return str(target_dir)
+
 
 # InternVL3 image preprocessing constants
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
@@ -88,17 +139,19 @@ def _dynamic_preprocess(image: Image.Image, min_num=1, max_num=12, image_size=44
 class ModelRunner:
     """Handles loading and inference with quantized InternVL3-8B."""
 
-    def __init__(self, model_path: str = "OpenGVLab/InternVL3-8B", device: str = "cuda"):
+    def __init__(self, model_path: str = "models/InternVL3-8B", device: str = "cuda"):
         """Load the quantized model and tokenizer.
 
         Args:
-            model_path: HuggingFace model ID or local path.
+            model_path: HuggingFace model ID or local path. Default Hub ID downloads to
+                ``models/InternVL3-8B`` under the current working directory.
             device: Device string ('cuda' or 'cpu'). When using 4-bit quantization,
                     device_map='auto' is used regardless.
         """
-        logger.info("Loading tokenizer from %s", model_path)
+        local_path = ensure_local_model(model_path)
+        logger.info("Loading tokenizer from %s", local_path)
         self.tokenizer = AutoTokenizer.from_pretrained(
-            model_path, trust_remote_code=True
+            local_path, trust_remote_code=True
         )
 
         logger.info("Loading model with 4-bit quantization...")
@@ -109,7 +162,7 @@ class ModelRunner:
         )
 
         self.model = AutoModel.from_pretrained(
-            model_path,
+            local_path,
             torch_dtype=torch.bfloat16,
             quantization_config=quant_config,
             device_map="auto",
@@ -154,10 +207,10 @@ class ModelRunner:
         """
         pixel_values, num_patches_list = self._prepare_pixel_values(images)
 
-        generation_config = GenerationConfig(
-            max_new_tokens=256,
-            do_sample=False,
-        )
+        generation_config = {
+            "max_new_tokens": 256,
+            "do_sample": False,
+        }
 
         response = self.model.chat(
             self.tokenizer,

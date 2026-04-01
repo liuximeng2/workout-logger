@@ -4,7 +4,7 @@ import logging
 import time
 
 from .exercise_bank import format_exercise_bank_for_prompt, get_exercise, load_exercise_bank
-from .frame_sampler import motion_sample, uniform_sample
+from .frame_sampler import fps_sample, motion_sample, uniform_sample
 from .model_runner import ModelRunner
 from .preprocess import preprocess_frames
 from .prompt import build_exercise_classification_prompt, build_rep_count_prompt
@@ -18,7 +18,8 @@ def run_pipeline(
     video_path: str,
     mode: str = "uniform",
     num_frames: int = 16,
-    model_path: str = "OpenGVLab/InternVL3-8B",
+    sample_fps: float | None = 4.0,
+    model_path: str = "models/InternVL3-8B",
     exercise_bank_path: str | None = None,
     device: str = "cuda",
     debug: bool = False,
@@ -29,15 +30,16 @@ def run_pipeline(
     Args:
         video_path: Path to the input workout video.
         mode: Frame sampling strategy ('uniform' or 'motion').
-        num_frames: Number of frames to sample.
-        model_path: Path or HF ID for the InternVL3-8B model.
+        num_frames: When ``sample_fps`` is 0 or None, number of frames to sample (uniform/motion).
+        sample_fps: Target frames per second from video FPS; 0 or None uses ``num_frames`` instead.
+        model_path: Local directory (default ``models/InternVL3-8B``) or HF model ID.
         exercise_bank_path: Path to exercise_bank.json.
         device: Device for inference ('cuda' or 'cpu').
         debug: Enable debug output.
         top_k_exercises: Limit exercise bank entries in prompt.
 
     Returns:
-        Dict with exercise, confidence, reps, mode, and num_frames.
+        Dict with exercise, confidence, reps, mode, num_frames, and sample_fps when used.
     """
     timings = {}
 
@@ -50,12 +52,28 @@ def run_pipeline(
 
     # Step 2: Sample frames
     t0 = time.time()
-    if mode == "motion":
-        sampled = motion_sample(frames, num_frames)
+    vfps = float(metadata.get("fps") or 0.0)
+    use_fps = sample_fps is not None and sample_fps > 0
+    if use_fps:
+        thinned = fps_sample(
+            frames, vfps, sample_fps, duration_sec=float(metadata.get("duration_sec") or 0) or None
+        )
+        if mode == "motion":
+            sampled = motion_sample(thinned, min(num_frames, len(thinned)))
+        else:
+            sampled = thinned
     else:
-        sampled = uniform_sample(frames, num_frames)
+        if mode == "motion":
+            sampled = motion_sample(frames, num_frames)
+        else:
+            sampled = uniform_sample(frames, num_frames)
     timings["sample_frames"] = time.time() - t0
-    logger.info("Sampled %d frames using '%s' strategy", len(sampled), mode)
+    logger.info(
+        "Sampled %d frames using '%s' strategy%s",
+        len(sampled),
+        mode,
+        f" (~{sample_fps} fps)" if use_fps else "",
+    )
 
     # Step 3: Preprocess frames
     t0 = time.time()
@@ -110,10 +128,13 @@ def run_pipeline(
     if debug:
         logger.debug("Timings: %s", {k: f"{v:.2f}s" for k, v in timings.items()})
 
-    return {
+    out: dict = {
         "exercise": exercise_name,
         "confidence": confidence,
         "reps": reps,
         "mode": mode,
         "num_frames": len(sampled),
     }
+    if use_fps:
+        out["sample_fps"] = sample_fps
+    return out

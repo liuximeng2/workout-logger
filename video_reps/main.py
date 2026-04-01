@@ -20,15 +20,24 @@ def main():
         help="Frame sampling strategy (default: uniform)",
     )
     parser.add_argument(
+        "--sample_fps",
+        type=float,
+        default=1.0,
+        help="Target sampling rate in frames per second from video FPS (default: 4). "
+        "Set to 0 to use --num_frames with uniform spacing across the whole clip instead.",
+    )
+    parser.add_argument(
         "--num_frames",
         type=int,
         default=16,
-        help="Number of frames to sample (default: 16)",
+        help="With --sample_fps 0: total frames to sample. With --mode motion and "
+        "--sample_fps > 0: max frames after fps thinning (default: 16).",
     )
     parser.add_argument(
         "--model_path",
-        default="OpenGVLab/InternVL3-8B",
-        help="HuggingFace model ID or local path (default: OpenGVLab/InternVL3-8B)",
+        default="models/InternVL3-8B",
+        help="Local directory or HuggingFace model ID (default: models/InternVL3-8B; "
+        "downloads OpenGVLab/InternVL3-8B into that folder on first run)",
     )
     parser.add_argument(
         "--exercise_bank",
@@ -61,10 +70,12 @@ def main():
     setup_logging(debug=args.debug)
 
     try:
+        sample_fps = None if args.sample_fps == 0 else args.sample_fps
         result = run_pipeline(
             video_path=args.video,
             mode=args.mode,
             num_frames=args.num_frames,
+            sample_fps=sample_fps,
             model_path=args.model_path,
             exercise_bank_path=args.exercise_bank,
             device=args.device,

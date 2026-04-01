@@ -1,3 +1,6 @@
+# Downloaded Hugging Face model weights (use models/InternVL3-8B in project)
+models/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -93,6 +96,9 @@ ipython_config.py
 #   having no cross-platform support, pipenv may install dependencies that don't work, or not
 #   install all needed dependencies.
 #Pipfile.lock
+
+# UV project cache (see [tool.uv] cache-dir in pyproject.toml)
+.uv-cache/
 
 # UV
 #   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
