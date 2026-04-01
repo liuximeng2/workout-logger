@@ -47,6 +47,12 @@
       "aliases": ["situp", "crunch"],
       "description": "A core exercise where the torso is raised from a lying position toward the knees and then lowered back.",
       "rep_definition": "One full rep is lying flat on the back, raising the torso toward the knees, and lowering back to the starting position."
+    },
+    {
+      "name": "hip adduction",
+      "aliases": ["hip adductor", "adductor machine", "seated hip adduction"],
+      "description": "A lower-body isolation movement where the legs are brought together toward the midline, typically on a machine or with a cable or band.",
+      "rep_definition": "One full rep is starting with legs apart in the working range, squeezing the legs together through full adduction, then returning to the start position."
     }
   ]
 }

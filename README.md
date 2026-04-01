@@ -27,11 +27,11 @@ uv pip install -e .
 
 ```bash
 # Basic usage
-uv run python -m video_reps.main --video data/videos/pushups.mp4
+uv run python -m video_reps.main --video data/videos/hip_adduction.mp4
 
 # With options
 uv run python -m video_reps.main \
-  --video data/videos/pushups.mp4 \
+  --video data/videos/hip_adduction.mp4 \
   --mode motion \
   --num_frames 16 \
   --model_path OpenGVLab/InternVL3-8B \
@@ -39,13 +39,13 @@ uv run python -m video_reps.main \
   --device cuda
 
 # Using the installed CLI entry point
-uv run video-reps --video data/videos/pushups.mp4
+uv run video-reps --video data/videos/hip_adduction.mp4
 
 # JSON output
-uv run video-reps --video data/videos/squats.mp4 --json
+uv run video-reps --video data/videos/hip_adduction.mp4 --json
 
 # Debug mode (shows timings, raw model output)
-uv run video-reps --video data/videos/squats.mp4 --debug
+uv run video-reps --video data/videos/hip_adduction.mp4 --debug
 ```
 
 ### CLI Arguments
